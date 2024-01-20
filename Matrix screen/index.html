@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas1"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas1');
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth - 10;
+        canvas.height = window.innerHeight - 30;
+
+
+        class Symbol {
+            constructor(x, y, fontSize, canvasHeight) {
+                this.characters = '0123456789קראטוןםחלךףזסבנמצתץאםפשדגכעיה';
+                this.x = x;
+                this.y = y;
+                this.fontSize = fontSize;
+                this.txt = '';
+                this.canvasHeight = canvasHeight;
+                this.count = 0;
+
+            }
+            
+            draw(context) {      /* 1 */
+                this.txt = this.characters.charAt(Math.floor(Math.random() * this.characters.length));
+                context.fillStyle = 'darkturquoise';
+                context.fillText(this.txt, this.x * this.fontSize, this.y * this.fontSize); /* 2 */
+            }
+
+            update() { 
+                if(this.count >= 10) return
+                if(this.y * this.fontSize > this.canvasHeight + 100 && Math.random() > 0.95){
+                    this.y = 0;
+                    this.count++;
+                } else {
+                    this.y++;
+                } /* 3 */      
+            } /* 4 */
+        }
+
+        class Effect {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.canvasWidth = canvas.width;
+                this.canvasHeight = canvas.height;
+                this.fontSize = 30;
+                this.columns = this.canvasWidth / this.fontSize;
+                this.symbols = [];
+                this.#initialize();
+
+            } /* 5 */
+
+            #initialize() { /* 6 */
+                for(let i = 0; i < this.columns; i++){
+                    this.symbols.push(new Symbol(i, 0, this.fontSize, this.canvasHeight));
+
+                }
+            } /* 7 */
+
+            hasFinished() {
+                return this.symbols.every(symbol => symbol.count >= 10);
+            }
+        }
+
+        const effect = new Effect(canvas);
+
+        function animate() { /* 8 */
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `${effect.fontSize}px monospace`; /* 9 */
+            for(let i = 0; i < effect.columns; i++) {
+                effect.symbols[i].draw(ctx);
+                effect.symbols[i].update();
+            }
+            if(!effect.hasFinished()) {
+                requestAnimationFrame(animate);
+            }
+        }
+        animate();
+
+/********** COMMENTS **********
+
+1: const sentence = 'The quick brown fox jumps over the lazy dog.';
+        const index = 4;
+        console.log(`The character code ${sentence.charCodeAt(index)} is equal to ${sentence.charAt(index)}`);
+        // Expected output: "The character code 113 is equal to q" .
+
+2: the fillText() takes 3 arguments, the text you want to draw and the x and y positions. x and y are multiplied by fontsize in order to guarantee  that the letters dont overlap each other.
+
+3: The if statement that checks if (this.y * this.fontSize > this.canvasHeight) and sets this.y to 0 is responsible for resetting the symbol's  position to the top of the canvas when it goes off the bottom.
+    However, the Math.random() > 0.95 condition is an additional check that is used to determine when to reset the symbol's position. It ensures that the symbol is only reset occasionally, rather than every single time it goes off the bottom of the canvas.
+    Without the Math.random() > 0.95 condition, the symbols would reset their position immediately every time they hit the bottom of the canvas, resulting in a constant stream of symbols moving from the top to the bottom of the canvas in a very predictable manner.
+    By adding the Math.random() > 0.95 condition, the code introduces an element of randomness to when the symbols reset their position, which creates a more interesting and dynamic effect on the canvas.
+    
+4: When you call the draw(context) function once, it will draw one symbol. The draw() function is defined inside the Symbol class, and it's called  on an instance of that class. Each time you call draw() on a Symbol object, it will generate a random character from the characters property, set the fill style to a green color, draw that character on the canvas at the specified x and y coordinates (which are adjusted by the fontSize), and then update the y coordinate. So if you call draw() on a Symbol object once, it will draw one character on the canvas at the specified position.
+
+5: In this code, the symbols array refers to instances of the Symbol class, which are objects that contain information about how to draw a character on the canvas. The characters property, on the other hand, is just a string that contains all the possible characters that can be displayed on the canvas. It's used by the Symbol class to randomly select a character to draw on the canvas.
+    By creating an array of Symbol objects, the code is able to control the position and movement of each character on the canvas individually, as well as adjust the color and size of the characters. This allows for a more dynamic and interesting effect to be created on the canvas, as each character moves and changes independently of the others.
+    So while the characters property defines what characters can be drawn on the canvas, the Symbol class and the symbols array allow the code to control how those characters are drawn and displayed.
+    
+6: the hash symbol infront of method initialize() makes this method private. private methods can not be called directly from the outside, they have restriucted access. creating private methods like this is a good example of abstractions which means that we r hiding unnecessary details from the user
+
+7: The #initialize() method is called once when an instance of the Effect class is created. It creates a Symbol object for each column in the canvas, and stores them in an array called symbols that belongs to the Effect object.
+    The for loop runs this.columns number of times, which is equal to the canvas width divided by the font size. For each iteration of the loop, a new Symbol object is created with the new Symbol() syntax. The i variable is passed as the x coordinate, 0 is passed as the y coordinate (which will be updated by the draw() method), and this.fontSize and this.canvasHeight are passed as arguments to the Symbol constructor.
+    Finally, the Symbol object that was just created is stored in the symbols array at index i. This process is repeated for each column in the canvas, so that this.symbols contains an array of Symbol objects, with one object for each column in the canvas.
+    
+8: we want the old symbols to fade away so we will draw a semi-transparent rectangle over canvas for every animation frame fillStyle is set to black transparent and then fillRect will draw a rectangle across the entire canvas. each animation frame will draw a new semi-transparent rect which will cause old paint underneath to slowly fade away step by step
+
+9: `${effect.fontSize}px monospace` sets the font size to effect.fontSize pixels and the font family to monospace, which is a font that has all of its characters occupy the same amount of horizontal space.
+    Using a monospace font is useful in this code because it ensures that each symbol takes up the same amount of space horizontally, which makes it easier to arrange the symbols in columns on the canvas.*/
+    </script>
+    
+</body>
+</html>

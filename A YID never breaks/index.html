@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A yid never breaks</title>
+</head>
+<style>
+    body {
+        background-color: black;
+    }
+</style>
+<body>
+    <canvas id="canvas1"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas1');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray;
+
+        ctx.font = '30px Verdana';
+        ctx.fillText('YID', 20, 40);
+        const txtCoords = ctx.getImageData(0, 0, 100, 100);  /* 1 */
+
+        const mouse = {
+            x: 0,
+            y: 0,
+            radius: 80,
+        }
+
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = 3;
+                this.baseX = this.x; /*  this.baseX and Y capture the initial position that each particle take the first time they appear */
+                this.baseY = this.y;
+                this.density = Math.floor(Math.random() * 50 + 100); /* we can make it move faster by changing density let's try range between 50 and 100. You can change the movement speed by adjusting the range of values here */
+            }
+
+            update() {
+                const maxDistance = mouse.radius;
+                const dx = this.x - mouse.x;
+                const dy = this.y - mouse.y;
+                const distance = Math.hypot(dx, dy);
+                const force =  distance / maxDistance;
+                if(distance < maxDistance) {
+                    const angle = Math.atan2(dy, dx);
+                    this.x += Math.cos(angle) * force * this.density;
+                    this.y += Math.sin(angle) * force * this.density;
+                } else {
+                    if(this.x !== this.baseX) {  /* 2 */
+                        const diffX = this.x - this.baseX;
+                        this.x -= diffX / 50;
+                    }
+                    if(this.y !== this.baseY) {
+                        const diffY = this.y - this.baseY;
+                        this.y -= diffY / 50;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'darkturquoise';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+            }
+        }
+
+        
+        // console.log(txtCoords.data);
+        function innit() {
+            particlesArray = [];
+            for(let y = 0; y < txtCoords.height; y++) { /* 3 */
+                for(let x = 0; x < txtCoords.width; x++) {
+                    if(txtCoords.data[(y * 4 * txtCoords.width) + (x * 4) + 3] > 128) {  /* 4 */
+                        const positionX = x;
+                        const positionY = y;
+                        particlesArray.push(new Particle(positionX * 10, positionY * 10));
+                    }
+                }
+            }
+        }
+
+        function connectingDots() { 
+            for(let a = 0; a < particlesArray.length; a++) {
+                for(let b = a; b < particlesArray.length; b++) {
+                    const dx = particlesArray[a].x - particlesArray[b].x;
+                    const dy = particlesArray[a].y - particlesArray[b].y;
+                    const distance = Math.hypot(dx, dy);
+                    if(distance < 50) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].draw();
+                particlesArray[i].update();
+
+            }
+            connectingDots();
+            requestAnimationFrame(animate);
+        }
+        
+        innit();
+        animate();
+
+
+
+        /************ Comments ***********
+
+1;  we use another canvas method called getImageData() to turn image into particles, it returns an image data object representing the underlying pixel data of a specified portion of the canvas, in other words, you give this method four Coords for a rectangular area somewhere on canvas, it scans that area pixel by pixel and it saves Coords and color information for each pixel inside of a huge data array since we know how the data is organized we can easily extract that information and use it for anything we want
+
+**************
+
+2;   i would like particles to return to their original position so in the else statement i say if this.x !== this.baseX (baseX captures the initial position of each particle) calculate distance between this.x and this.baseX. once i know the difference i can just return particle to its original horizontal position by saying this.x -= dx but to make particles move back slower i say dx / 35. it will eventually get to its original position because this code is run for each frame of animation it will just get there slower also keep in mind we are currently inside else statement which will be entered only when particle is not close enough to the mouse so particles will only try to return to their original position once mouse moves far enough from them so this way we corrected particles horizontally we can also correct them vertically
+
+**************
+
+*** important Note on nested loops ***
+for example we have this nested loop: 
+            for(let y = 0; y < 100; y++) { 
+                for(let x = 0; x < 100; x++) {
+                    **whatever code here ***
+
+the first or outer loop is the y loop and the nested loop is the x loop. the first one to go is obviously the outer loop, it runs, chec ks that its value is 0 and as long as it hasnt reached 100 it will run whatever code lies under it. so, for the first iteration it checks its value and sees that it is under 100 so it runs the code under it and will not return to itself until the code under it is completed. so the outer loop passes the baton to the line under it and the line under it happens to be the nested loop which also has to perform the code under it while it is < 100 so this loop will not return the baton to the outer loop until it finishes whatever code is under it, when x = 99 it can not continue running whatever code is under it so it returns the baton to the outer loop and the outer loop moves on to its next iteration, y = 1 and passes the baton back to the nested loop and waits until it finishes to run whatever code is under it. but, why does the inner loop get to finish its work and the outer loop cant? bc the nested loop is part of the code under the outer loop, meaning, that the inner(nested) loop is part of whatever code that has to be finished by the outer loop so until the inner loop finishes, the outer loop can not continue to iterate. 
+
+3;  how do we make the particles spell out letters of text? for that we use our "txtCoords" variable which is = ctx.getImageData() in-built method that takes four attributes for a rectangular area of canvas we want to scan and it returns an image data object that contains information like coordinates and color of the pixels from that area on canvas. inside our custom init() function i will filter that returned object that resulted from our scan (getImageData()) and i will remove all pixels with transparent background leaving only data points for pixels that contain color which will be the coordinates for particles that make out our text effect. keep in mind that canvas is transparent, the black color you see is set on the body element so the only pixels with color are the actual letters. let's go through it step by step; i call two properties txtCoords.height and txtCoords.width which is simply just width and height of a scanned area in pixels. I create a for loop and say as long as y < txtCoords.height; y++ and do the same with x. so we have two variables x and y and they will keep increasing until they reach the same value as y2 and x2. i want to go through them one by one from left to right and up and down so i create a nested for loop which simply is a loop inside of another loop (like in our chess board code in eloquent js) in this case, we scanned a rectangle 100 times 100 pixels. so txtCoords.height is 100 and txtCoords.width is 100 as well. this outer for loop will run 100 times and each time it runs it will run in a for loop 100 times so we're gonna analyze 100 x 100 or 10,000 pixels. this nested loop basically allows us to cycle through every pixels in that hundred times 100 pixel area for each pixel i check if opacity of that pixel is more than 128. "txtCoords" custom variable holds built-in image data object that was returned by get image data javascript method has a data property and this data property holds a data array with 40,000 elements, this type of array is called Uint8 clamped array if i simplify this it's a special type of array that can hold only numbers and those numbers are limited to a certain range, each element in this array can only be a number between 0 and 255. if you work with html and css you have seen rgba color declaration which looks like this any color can be created by combining different amounts of red green and blue and the range for each color is from 0 to 255 one weird thing about this clamped array is that it also handles alpha or opacity this way so 0 alpha is invisible 255 alpha is fully visible this is different because in rgba color declaration opacity is a small number between 0 and 1. so why does this array have forty thousand elements when the area we are scanning is hundred times hundred pixels and we know hundred times hundred is only 10.000 not 40.000. again a very simple explanation let's look back at our rgba color declaration each color is made out of four properties red green blue and alpha same with this clamped array data object the way it's organized is every four elements in that array represent these four color values for one pixel so color for pixel one is the first four numbers in this array color for pixel two is the next four numbers and so on that's why we have 40.000 numbers in this array and we only have ten thousand pixels it's because we need four numbers to make one color each number is something between 0 and 255 including the number for alpha opacity
+
+****************
+
+4;  y represents the current y-coordinate of the pixels being examined, txtCoords.width represents the width of the image, Multiplying y by 4 * txtCoords.width takes into account that each pixel in the txtCoords.data array consists of four consecutive elements (representing the red, green, blue, and alpha channels). So y * 4 * txtCoords.width calculates the offset in the array for the current row of pixels.
+(x * 4) calculates the offset within the current row for the current pixel being examined. Since each pixel occupies four consecutive elements, multiplying x by 4 gives the correct offset.
+Adding (y * 4 * x2) + (x * 4) combines the row offset and the pixel offset to get the overall offset of the pixel within the txtCoords.data array.
+Finally, adding 3 gives the index of the alpha channel value within the pixel. Since the alpha channel is the fourth element in the sequence (red, green, blue, alpha), adding 3 gives the correct index.
+In summary, (y * 4 * x2) + (x * 4) + 3 calculates the index of the alpha channel value for the current pixel based on its coordinates (x and y) and the width of the image (x2).
+the expression txtCoords.data[(y * 4 * x2) + (x * 4) + 3] > 128 is checking that the index of txtCoords.data is greater than 128.
+in the first iteration of the loop, y = 0 and x = 0 so the result of the calculation of the index will be: (0 * 4 * 100) +  (0 * 4) + 3 = 3, meaning, is txtCoords.data[3] > 128 ?.
+the index 3 indicates the 4th element inside the first pixel, remember we start with 0 and index 3 is the 4th element inside the pixel, "the opacity". then the computer will check the value of txtCoords.data[3] and compare it to 128.
+the 2nd time the loop iterates the value of y will remain the same y = 0 but the value of x will change to 1, x = 1 so the result of the calculation in the 2nd iteration of the loop will be txtCoords.data[7] and so on...
+it is good to point out that during the first iteration of the outer loop, the first column (x = 0) and the first row (y = 0) will occupy the same position in the grid.
+
+*/
+    </script>
+</body>
+</html>

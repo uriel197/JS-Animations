@@ -1,0 +1,19 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background-color: black;
+    /* on the body element i set overflow to "hidden" to hide potential scroll bars and give it black background i choose to place the background on the body element instead on the canvas because this will allow us to use liquid or distortion svg filters if we choose to, especially liquid filter which only works if canvas background is transparent  */
+
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+}

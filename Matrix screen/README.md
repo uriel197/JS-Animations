@@ -1,7 +1,8 @@
-# Matrix Rain Effect
-A mesmerizing matrix rain animation using HTML5 and JavaScript. This animation creates a visual representation of falling characters, inspired by the iconic matrix rain effect.
+# Symbol Matrix Animation
 
-# Table of Contents
+An engaging symbol matrix animation using HTML5 and JavaScript. This animation creates a visual representation of falling symbols in a matrix pattern.
+
+## Table of Contents
 
 <details open>
 <summary>Click to expand</summary>
@@ -15,23 +16,41 @@ A mesmerizing matrix rain animation using HTML5 and JavaScript. This animation c
 </details>
 
 ---
-## Introduction
-This project features a Matrix Rain Effect implemented in HTML5 and JavaScript. The animation creates a matrix of falling characters, creating an iconic matrix rain effect.
 
-### Features
-Matrix rain animation with falling characters.
-Customizable character set and visual styles.
-Responsive design that adapts to different screen sizes.
+## Introduction
+
+This project features a Symbol Matrix Animation implemented in HTML5 and JavaScript. The animation creates a matrix of falling symbols, providing a captivating visual experience.
+
+## Features
+
+- Matrix animation with falling symbols.
+- Customizable symbol set and visual styles.
+- Responsive design adapting to different screen sizes.
+
+## Usage
+
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/uriel197/JS-Animations.git
+    ```
+
+2. Open `index.html` in a web browser.
+
+3. Experience the mesmerizing symbol matrix animation on your screen.
 
 ## Customization
-You can customize various aspects of the matrix rain effect:
 
-Character Set: Modify the characters property in the Symbol class to change the set of characters used in the animation.
+You can customize various aspects of the symbol matrix animation:
 
-Visual Styles: Adjust the colors and styles used in the draw method of the Symbol class to customize the appearance of the falling characters.
+- **Symbol Set:** Modify the `characters` property in the `Symbol` class to change the set of symbols used in the animation.
 
-Canvas Size: Change the canvas size by modifying the canvas.width and canvas.height properties.
+- **Visual Styles:** Adjust the colors and styles used in the `draw` method of the `Symbol` class to customize the appearance of the falling symbols.
 
-### License
-This project is licensed under the MIT License.
+- **Canvas Size:** Change the canvas size by modifying the `canvas.width` and `canvas.height` properties.
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---

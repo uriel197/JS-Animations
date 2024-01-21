@@ -36,4 +36,6 @@ Canvas Styling: Customize the canvas style in the <style> tag within the HTML, c
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
+
+---
